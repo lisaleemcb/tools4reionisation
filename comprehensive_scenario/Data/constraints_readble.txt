@@ -1,0 +1,25 @@
+# from Bouwens 2015
+#  z    QHII dQHIIplus dQHIImoins
+# 
+  7.3    0.45     0.25     0.25      LAE (Konno2014)
+  6.6    0.7      0.20     0.20      LAE (Konno2017)
+  6.6    0.73     0.15     0.15      LAE (Ota2008)
+  7.0    0.67     0.21     0.21      LAE (Ota2008)
+  6.6    1.       0.       0.25      LAE (McQuinn2007)
+  #6.6    1.       0.       0.20     LAE (Ouichi2010)
+  7.0    0.41     0.15     0.11      LAE (Mason2018)
+  7.6    0.12     0.1      0.05      LAE (Hoag2019)
+  7.0    0.61     0.09     0.08      LAE (Schenker2014)
+  7.9    0.54     0.       0.25	     LAE (Mason2019)
+  6.9    0.5      0.1      0.1       LAE (Zheng2017)
+
+  7.1    0.60     0.19     0.21      QSOs (Greig2017)
+  7.54   0.79     0.19     0.17      QSOs (Greig2018)
+
+  5.6    0.94     0.       0.05      QSOs Lyalpha-beta (McGreer2015)
+  5.9    0.96     0.       0.05      QSOs Lyalpha-beta (McGreer2015)
+
+  5.91   0.914    0.011    0.012     GRB (Totani2014)
+  6.33   0.944    0.027    0.011     GRB (Chornock2014)
+  
+	 
