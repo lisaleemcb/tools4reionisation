@@ -7,6 +7,7 @@ This code is based on Gorce+2020 (arXiv:2004.06616) which presents a simple para
 	- zre, the midpoint of EoR (where x_HII = 0.50)
 	- alpha0, a measure of the variance in the ionisation field (typically, alpha0 = 10 ** 3.5 - 10 ** 4.5 Mpc3)
 	- kappa, a measure of the typical bubble size during reionisation (typically, kappa = 0.05 - 0.15 Mpc-1)
+
 The computation of the homogeneous part of the kSZ signal is based on Shaw+2012, recalibrated to new simulations.
 
 You only need to run
