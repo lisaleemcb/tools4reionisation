@@ -73,7 +73,6 @@ def model_plots(data,nrand=10000,CL=95):
     ref = np.loadtxt("./Data/constraints_readble.txt",usecols=(4),dtype=str,unpack=True)
 
     z      = np.linspace(0,30, 300)
-    y0     = 0.0001# initial condition
     rec = [0.1, 0.1, 0.85, 0.85]
 
     # xe figure
@@ -135,18 +134,16 @@ def model_plots(data,nrand=10000,CL=95):
 
         print('\nImporting data %s' %(data1))
         outfile = './Outfiles/chains_'+str(data1)+'.dat' 
-        a,b,c,d,tau,like      = np.loadtxt(outfile,unpack=True)
-        samples  = np.c_[a,b,c,d]
+        out = np.loadtxt(outfile,unpack=True)
+        samples = out[:-2,:]
+        tau = out[-2,:]
         # endstr = '_'+str(data1)+endstr
 
         rho, xe = np.zeros((z.size,nrand)), np.zeros((z.size,nrand))
         u=0
-        for a,b,c,d in samples[np.random.randint(len(samples), size=nrand)]:#[np.random.randint(len(samples), size=nrand)]:
-            theta=(a,b,c,d)
-            rho[:,u] = sfrd(z[::-1],(a,b,c,d))
-            xe1 = QHII(z[::-1],y0,theta).flatten()
-            xe1[xe1>hz.fH] = hz.fH
-            xe[:,u]= xe1
+        for theta in samples[np.random.randint(len(samples), size=nrand)]:#[np.random.randint(len(samples), size=nrand)]:
+            rho[:,u] = sfrd(z[::-1],tuple(theta))
+            xe[:,u] = QHII(z[::-1],hz.y0,tuple(theta)).flatten()
             msg = str('Computing confidence intervals... %i%% done' %((u+1)/nrand*100))
             loading_verbose(msg)
             u=u+1

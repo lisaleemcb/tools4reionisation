@@ -32,5 +32,5 @@ if HeliumI:
 		
 # INITIAL SET OF PARAMETERS FOR THE FIT
 theta_init = (0.01376,3.26,2.59,5.68)
-
+y0 = 0.0001 #leftover ionised fraction after recombination
 
