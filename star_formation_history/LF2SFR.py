@@ -44,7 +44,7 @@ def UV_density(M,z,Mlim,phi_star,M_star,alpha,lum=False,numerical=False):
     import mpmath
 
     L = M2L(M,z)
-    Llim = M2L(Mlim,z)
+    Llim = 10.**(0.4*(M_star-Mlim))# M2L(Mlim,z)
     Lstar = M2L(M_star,z)
     if (lum):
         M_star = L2M(M_star,z)
@@ -74,7 +74,7 @@ def SFR_density(M,z,Mlim,phi_star,M_star,alpha,lum=False,numerical=False):
         n_M = Schechter_LF(M,z,phi_star,M_star,alpha,lum) 
         rho=simps(n_M[M<Mlim]*L[M<Mlim],M[M<Mlim])
     SFR2UV = 8.0e27 #egrs s-1 Hz-1 Madau 1998
-    SFR = rho - np.log10(SFR2UV) 
+    SFR = rho/SFR2UV
     return SFR
 
 
