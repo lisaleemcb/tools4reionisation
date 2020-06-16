@@ -2,7 +2,7 @@
 
 Here you will find all you need to compute the kSZ angular power spectrum theoretically.
 
-This code is based on Gorce+2020 (arXiv:2004.06616) which presents a simple parameterisation of the patchy kSZ angular power spectrum in terms of reionisation history and morphology. You will need the value of 4 parameters, that will be specified in the parameters.py file:\\
+This code is based on Gorce+2020 (arXiv:2004.06616) which presents a simple parameterisation of the patchy kSZ angular power spectrum in terms of reionisation history and morphology. You will need the value of 4 parameters, that will be specified in the parameters.py file:\n
 	- zend, the redshift at which reionisation ends
 	- zre, the midpoint of EoR (where x_HII = 0.50)
 	- alpha0, a measure of the variance in the ionisation field (typically, alpha0 = 10 ** 3.5 - 10 ** 4.5 Mpc3)
