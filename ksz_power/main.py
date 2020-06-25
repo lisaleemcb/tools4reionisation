@@ -11,7 +11,9 @@ import multiprocessing
 from parameters import *
 from functions import *
 
-
+if debug:
+    print('You are running in debugging mode')
+          
 x3 = xe(z3,zend,zre)
 tau = xe2tau(z3,x3)[-1]
 print("tau = %.5f" %(tau))
