@@ -77,7 +77,7 @@ b_del_e=np.vectorize(lambda k,z : np.sqrt(Pee(k,z)/Pk(k,z)) )
 b_del_e_integ = b_del_e(kp_integ[:, None], z_integ[:, None, None])
 eta_z_integ = D_C(z_integ)  # comoving distance to z in [Mpc]
 detadz_z_integ = c / H(z_integ)  # Hubble parameter in SI units [m]
-f_z_integ = f(z_integ)  # growth factor no units
+f_z_integ = f(z_integ)  # growth rate, no units
 adot_z_integ = (1. / (1. + z_integ)) * H(z_integ)  # in SI units [s-1]
 n_H_z_integ = n_H(z_integ)  # number density of baryons in SI units [m-3]
 x_i_z_integ = xe(z_integ) # reionisation history
@@ -85,13 +85,12 @@ tau_z_integ = xe2tau(z_integ,x_i_z_integ)  # thomson optical depth
 Pk_lin_integ = Pk_lin(kp_integ[:, None],z_integ[:, None, None]) #linear matter power spectrum
 
 if debug:
-    
+
     n_threads = 1
 
     import matplotlib.pyplot as plt
     import matplotlib as m
     m.rcParams.update({'font.size': 15})
-    plt.ion()
     
     plt.figure(figsize=(9,8))
     plt.plot(z3,xe(z3))
@@ -108,7 +107,7 @@ if debug:
     for u,z in enumerate(z_range):
         plt.loglog(k2,Pee(k2,z),lw=1.5,color=cmap(norm(xe(z))))
     plt.ylim(1e-6,1e6)
-    plt.xlim(kmin_pk,kmax_pk)
+    plt.xlim(min_logkp,max_logkp)
     plt.xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
     plt.ylabel(r'$P_{ee}(k,z) [\mathrm{Mpc}^3]$')
     sm = plt.cm.ScalarMappable(cmap=cmap,norm=norm)
