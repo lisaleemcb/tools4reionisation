@@ -34,3 +34,5 @@ The parameterisation used for P_ee(k,z) is also included in this file.
 
 
 This package requires camb (pycamb) to be installed: https://camb.info
+
+Copyrights: Stephane Ilic & Adelie Gorce
