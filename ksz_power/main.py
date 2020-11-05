@@ -6,17 +6,38 @@
 import camb
 from camb import model, initialpower
 import numpy as np
+import sys
 import multiprocessing
 
 from parameters import *
 from functions import *
 
+Mpckm = 1e6 * AU / np.tan(1. / 3600. * np.pi / 180.)  # one Mpc in [km]
+Mpcm = Mpckm * 1e3                          # one Mpc in [m]
+
 if debug:
     print('You are running in debugging mode')
-          
+if ~late_time:
+    print('You are running for patchy kSZ only')
+
+#### grids ####
+z3=np.linspace(0,z_max,100)         
 x3 = xe(z3,zend,zre)
 tau = xe2tau(z3,x3)[-1]
 print("tau = %.5f" %(tau))
+if late_time:
+    z_integ = np.concatenate(
+        (
+            np.logspace(np.log10(z_min),np.log10(z_piv),int((np.log10(z_piv) - np.log10(z_min)) / dlogz) + 1),
+            np.arange(z_piv,10.,step=dz),
+            np.arange(10,z_max+0.5,step=0.5)
+        )
+    )
+else:
+    z_integ = np.concatenate(
+        (np.arange(zend-1.,10.,step=dz),
+         np.arange(10,z_max+0.5,step=0.5))
+    )
 
 ##############################################
 ############## CAMB ##########################
@@ -68,14 +89,21 @@ print('Finished computing cosmo functions')
 #### Arrays for integration ####
 ################################
 print("Prepare for kSZ calculation...")
+th_integ = np.linspace(0.000001,np.pi*0.999999,num_th)
+mu = np.cos(th_integ) #cos(k.k')
+kp_integ = np.logspace(
+    min_logkp,
+    max_logkp,
+    int((max_logkp - min_logkp) / dlogkp) + 1
+)
 
 # free electrons power spectrum
-def Pee2(k,z):
+def Pee(k,z):
     return (fH-xe(z))*W(k,xe(z)) + xe(z)*bdH(k,z)*Pk(k,z)
-Pee=np.vectorize(lambda k,z : Pee2(k,z))
-# electrons - matter bias
-b_del_e=np.vectorize(lambda k,z : np.sqrt(Pee(k,z)/Pk(k,z)) ) 
+def b_del_e(k,z):
+    return np.sqrt(Pee(k,z)/Pk(k,z))
 
+# computations below take 6.5 secs
 b_del_e_integ = b_del_e(kp_integ[:, None], z_integ[:, None, None])
 eta_z_integ = D_C(z_integ)  # comoving distance to z in [Mpc]
 detadz_z_integ = c / H(z_integ)  # Hubble parameter in SI units [m]
@@ -92,6 +120,10 @@ if debug:
     import matplotlib as m
     m.rcParams.update({'font.size': 15})
     
+    k2=np.logspace(min_logkp,max_logkp,100)
+    z_range=np.arange(0.,z_max+1.,step=1)
+    k_range = [0.05,0.1,0.2,0.5,1.,2.,5.,10.,20.]
+
     plt.figure(figsize=(9,8))
     plt.plot(z3,xe(z3))
     plt.xlabel(r'Redshift $z$')
@@ -139,23 +171,22 @@ if debug:
 ########################
 #### C_ell fonction ####
 ########################
-def C_ell_kSZ(ell):
+def C_ell_kSZ(ell,late_time=late_time):
     ### Preliminaries
     # in [Mpc-1]
-    k_z_integ = ell / eta_z_integ
-    g = z_integ >= zend #patchy signal 
+    k_z_integ = np.float32(ell / eta_z_integ)
 
     # in [Mpc-1]
     k_min_kp = np.sqrt(k_z_integ[:, None, None]**2 + kp_integ[:, None]**2. - 2. * k_z_integ[:, None, None] * kp_integ[:, None] * mu)
     ### Compute I_tot1 and I_tot2, in [Mpc^2]
-    I_e = ( Pee(k_min_kp,z_integ[:, None, None]) / kp_integ[:, None]**2.) - (b_del_e(k_min_kp, z_integ[:, None, None]) *  b_del_e_integ * Pk_lin(k_min_kp,z_integ[:, None, None]) / (k_z_integ[:, None, None]**2. + kp_integ[:, None]**2. + 2. * k_z_integ[:, None, None] * kp_integ[:, None] * mu) )
+    I_e = ( Pee(k_min_kp,z_integ[:, None, None]) / kp_integ[:, None]**2.) - (np.sqrt(Pee(k_min_kp,z_integ[:, None, None])/Pk(k_min_kp,z_integ[:, None, None])) *  b_del_e_integ[:,:,:] * Pk_lin(k_min_kp,z_integ[:, None, None]) / (k_z_integ[:, None, None]**2. + kp_integ[:, None]**2. + 2. * k_z_integ[:, None, None] * kp_integ[:, None] * mu) )
 
     ### Compute Delta_B^2 integrand, in [s-2.Mpc^2]
     Delta_B2_integrand = (
         k_z_integ[:, None, None]**3. / 2. / np.pi**2. *
         (f_z_integ[:, None, None] * adot_z_integ[:, None, None])**2. *
         kp_integ[:, None]**3. * np.log(10.) * np.sin(th_integ) / (2. * np.pi)**2. *
-        Pk_lin_integ * (1. - mu**2.) * I_e
+        Pk_lin_integ[:,:,:] * (1. - mu**2.) * I_e
     )
     ### Compute Delta_B^2, in [s-2.Mpc^2]
     Delta_B2 = simps(simps(Delta_B2_integrand, th_integ), np.log10(kp_integ))
@@ -163,18 +194,27 @@ def C_ell_kSZ(ell):
     ### Compute C_kSZ(ell) integrand, in [m-3.Mpc^3]
     C_ell_kSZ_integrand = (
         8. * np.pi**2. / (2. * ell + 1.)**3. * (s_T / c)**2. *
-        (n_H_z_integ * x_i_z_integ / (1. + z_integ))**2. *
+        (n_H_z_integ[:] * x_i_z_integ[:] / (1. + z_integ[:]))**2. *
         Delta_B2 *
-        np.exp(-2. * tau_z_integ) * eta_z_integ * detadz_z_integ
+        np.exp(-2. * tau_z_integ[:]) * eta_z_integ[:] * detadz_z_integ[:]
     )
 
     ### Compute C_kSZ(ell), no units
-    result = trapz(C_ell_kSZ_integrand * Mpcm**3.,z_integ)
-    result_p = trapz(C_ell_kSZ_integrand[g] * Mpcm**3.,z_integ[g])
-    if debug:
-        print("...C(ell=%s) = %.2e, %.2e" %(ell,result,result_p))
+    result = trapz(C_ell_kSZ_integrand * Mpcm**3.,z_integ[:])
+    if late_time:
+        g = z_integ >= zend 
+        result_p = trapz(C_ell_kSZ_integrand[g] * Mpcm**3.,z_integ[g])    
+        res = [result,result_p]
+    else:
+        res = [result]      
 
-    return result, result_p
+    if debug:
+        sys.stdout.write("...C(ell=%i) = " %ell)
+        for r in res:
+            sys.stdout.write(' %.2e' %r)
+        print(' ')
+        
+    return res
 
 #######################################
 ### Parallel computation of C_ells ####
@@ -184,7 +224,7 @@ print("Begin kSZ calculation...")
 ells = np.linspace(ell_min_kSZ, ell_max_kSZ, n_ells_kSZ, dtype=int)
 if (debug):
     ells = np.random.randint(ell_min_kSZ, ell_max_kSZ, n_ells_kSZ) 
-C_ells_kSZ=np.zeros((ells.size,2))
+# C_ells_kSZ=np.zeros((ells.size,2))
 C_ells_kSZ = np.array(multiprocessing.Pool(n_threads).map(C_ell_kSZ, ells))
 
 ######################

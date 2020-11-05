@@ -16,14 +16,19 @@ ax.tick_params(labelsize=14)
 
 ######## results
 
-l1, ksz_tot, ksz1 = np.loadtxt(outroot+'_kSZ_Cells.txt',unpack=True)
-PS1 = l1*(l1+1)*ksz1/(2*np.pi)*(T_CMB_uK**2) # 
-PS2 = l1*(l1+1)*(ksz_tot-ksz1)/(2*np.pi)*(T_CMB_uK**2)
-PS = PS1 + PS2
+out = np.loadtxt(outroot+'_kSZ_Cells.txt',unpack=True)
+l1 = out[:,0]
+if late_time:
+	PS1 = l1*(l1+1)*out[:,2]/(2*np.pi)*(T_CMB_uK**2) # 
+	PS2 = l1*(l1+1)*(out[:,1]-out[:,2])/(2*np.pi)*(T_CMB_uK**2)
+	PS = PS1 + PS2
+	plt.plot(l1,PS2,color='C0',lw=1.2,ls='-.',label=r'Homogeneous signal')
+	plt.plot(l1,PS1+PS2,color='C0',lw=1.5,label='Total signal')
 
-plt.plot(l1,PS2,color='C0',lw=1.2,ls='-.',label=r'Homogeneous signal')
+else:
+	PS1 = l1*(l1+1)*out[:,1]/(2*np.pi)*(T_CMB_uK**2) # 
 plt.plot(l1,PS1,color='C0',lw=1.2,ls='--',label=r'Patchy signal')
-plt.plot(l1,PS1+PS2,color='C0',lw=1.5,label='Total signal')
+
 
 ######## data
 plt.errorbar(3000,1.1,yerr=[[0.7],[1.0]],lw=0.,capsize=3.,elinewidth=1.2,color='k',marker='o',ms=5,alpha=.7) #reichardt+2020
@@ -32,13 +37,12 @@ plt.legend(loc='upper left',frameon=False,fontsize=16,ncol=1)
 # plt.savefig('./kSZ_PS.png')
 
 print('Results:')
-
 ls = np.linspace(min(l1),max(l1),10000)
+if late_time:
+	homo = interpolate.interp1d(l1,PS2)
+	print(' homogeneous... %.2f muK^2' %(homo(3000)))
 patchy = interpolate.interp1d(l1,PS1)
-homo = interpolate.interp1d(l1,PS2)
-pps = patchy(ls)
-
 print(' patchy... %.3f muK^2' %(patchy(3000)))
-print(' homogeneous... %.2f muK^2' %(homo(3000)))
+pps = patchy(ls)
 print(' lmax... %.1f' %(ls[np.argmax(pps)]))
 print(' max ampl... %.2f ' %(np.max(pps)))
