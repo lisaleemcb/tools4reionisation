@@ -21,7 +21,7 @@ You only need to run
 to compute the spectrum on a range of multipoles spectified in parameters.py
 	run plot.py
 to plot the resulting power spectrum (patchy+homogeneous) in muK2.
-Currently, < 1 min are needed to compute one C_ell.
+Currently, < 1 min are needed to compute one C_ell with float32 precision.
 
 
 The params.py file allows you to fix all the parameters used in the computation, that is:

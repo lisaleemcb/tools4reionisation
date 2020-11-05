@@ -14,32 +14,15 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 from parameters import *
 from functions import *
 
-Mpckm = 1e6 * AU / np.tan(1. / 3600. * np.pi / 180.)  # one Mpc in [km]
-Mpcm = Mpckm * 1e3                          # one Mpc in [m]
-
 if debug:
-    print('You are running in debugging mode')
+    print('\nYou are running in debugging mode')
 if ~late_time:
-    print('You are running for patchy kSZ only')
+    print('You are running for patchy kSZ only\n')
 
-#### grids ####
 z3=np.linspace(0,z_max,100)         
 x3 = xe(z3,zend,zre)
 tau = xe2tau(z3,x3)[-1]
 print("tau = %.5f" %(tau))
-if late_time:
-    z_integ = np.concatenate(
-        (
-            np.logspace(np.log10(z_min),np.log10(z_piv),int((np.log10(z_piv) - np.log10(z_min)) / dlogz) + 1),
-            np.arange(z_piv,10.,step=dz),
-            np.arange(10,z_max+0.5,step=0.5)
-        )
-    )
-else:
-    z_integ = np.concatenate(
-        (np.arange(zend-1.,10.,step=dz),
-         np.arange(10,z_max+0.5,step=0.5))
-    )
 
 ##############################################
 ############## CAMB ##########################
@@ -90,23 +73,22 @@ print('Finished computing cosmo functions')
 ################################
 #### Arrays for integration ####
 ################################
-print("Prepare for kSZ calculation...")
-th_integ = np.linspace(0.000001,np.pi*0.999999,num_th)
-mu = np.cos(th_integ) #cos(k.k')
+print("\nPrepare for kSZ calculation...")
+th_integ = np.linspace(0.0001,np.pi*0.9999,num_th,dtype = precision)
+mu = np.cos(th_integ,dtype = precision) #cos(k.k')
 kp_integ = np.logspace(
     min_logkp,
     max_logkp,
-    int((max_logkp - min_logkp) / dlogkp) + 1
+    int((max_logkp - min_logkp) / dlogkp) + 1,
+    dtype = precision
 )
 
 # free electrons power spectrum
 def Pee(k,z):
-    return (fH-xe(z))*W(k,xe(z)) + xe(z)*bdH(k,z)*Pk(k,z)
-def b_del_e(k,z):
-    return np.sqrt(Pee(k,z)/Pk(k,z))
+    return precision(fH-xe(z))*W(k,xe(z)) + xe(z)*bdH(k,z)*Pk(k,z)
 
 # computations below take 6.5 secs
-b_del_e_integ = b_del_e(kp_integ[:, None], z_integ[:, None, None])
+b_del_e_integ = np.sqrt(Pee(kp_integ[:, None], z_integ[:, None, None])/Pk(kp_integ[:, None], z_integ[:, None, None]),dtype=precision) #electrons bias
 eta_z_integ = D_C(z_integ)  # comoving distance to z in [Mpc]
 detadz_z_integ = c / H(z_integ)  # Hubble parameter in SI units [m]
 f_z_integ = f(z_integ)  # growth rate, no units
@@ -114,7 +96,7 @@ adot_z_integ = (1. / (1. + z_integ)) * H(z_integ)  # in SI units [s-1]
 n_H_z_integ = n_H(z_integ)  # number density of baryons in SI units [m-3]
 x_i_z_integ = xe(z_integ) # reionisation history
 tau_z_integ = xe2tau(z_integ,x_i_z_integ)  # thomson optical depth
-Pk_lin_integ = Pk_lin(kp_integ[:, None],z_integ[:, None, None]) #linear matter power spectrum
+Pk_lin_integ = precision(Pk_lin(kp_integ[:, None],z_integ[:, None, None])) #linear matter power spectrum
 
 if debug:
 
@@ -141,7 +123,7 @@ if debug:
     for u,z in enumerate(z_range):
         plt.loglog(k2,Pee(k2,z),lw=1.5,color=cmap(norm(xe(z))))
     plt.ylim(1e-6,1e6)
-    plt.xlim(min_logkp,max_logkp)
+    plt.xlim(k2.min(),k2.max())
     plt.xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
     plt.ylabel(r'$P_{ee}(k,z) [\mathrm{Mpc}^3]$')
     sm = plt.cm.ScalarMappable(cmap=cmap,norm=norm)
@@ -176,19 +158,20 @@ if debug:
 def C_ell_kSZ(ell,late_time=late_time):
     ### Preliminaries
     # in [Mpc-1]
-    k_z_integ = np.float32(ell / eta_z_integ)
+    k_z_integ = precision(ell / eta_z_integ)
 
     # in [Mpc-1]
-    k_min_kp = np.sqrt(k_z_integ[:, None, None]**2 + kp_integ[:, None]**2. - 2. * k_z_integ[:, None, None] * kp_integ[:, None] * mu)
+    k_min_kp = np.sqrt(k_z_integ[:, None, None]**2 + kp_integ[:, None]**2. - 2. * k_z_integ[:, None, None] * kp_integ[:, None] * mu,dtype=precision)
     ### Compute I_tot1 and I_tot2, in [Mpc^2]
-    I_e = ( Pee(k_min_kp,z_integ[:, None, None]) / kp_integ[:, None]**2.) - (np.sqrt(Pee(k_min_kp,z_integ[:, None, None])/Pk(k_min_kp,z_integ[:, None, None])) *  b_del_e_integ[:,:,:] * Pk_lin(k_min_kp,z_integ[:, None, None]) / (k_z_integ[:, None, None]**2. + kp_integ[:, None]**2. + 2. * k_z_integ[:, None, None] * kp_integ[:, None] * mu) )
+    Pee_min_kp = Pee(k_min_kp,z_integ[:, None, None])
+    I_e = ( Pee_min_kp / kp_integ[:, None]**2.) - (np.sqrt(Pee_min_kp/Pk(k_min_kp,z_integ[:, None, None])) *  b_del_e_integ[:,:,:] * Pk_lin(k_min_kp,z_integ[:, None, None]) / (k_z_integ[:, None, None]**2. + kp_integ[:, None]**2. + 2. * k_z_integ[:, None, None] * kp_integ[:, None] * mu) )
 
     ### Compute Delta_B^2 integrand, in [s-2.Mpc^2]
     Delta_B2_integrand = (
         k_z_integ[:, None, None]**3. / 2. / np.pi**2. *
         (f_z_integ[:, None, None] * adot_z_integ[:, None, None])**2. *
         kp_integ[:, None]**3. * np.log(10.) * np.sin(th_integ) / (2. * np.pi)**2. *
-        Pk_lin_integ[:,:,:] * (1. - mu**2.) * I_e
+        Pk_lin_integ[:,:,:] * (1. - mu**2.) * precision(I_e)
     )
     ### Compute Delta_B^2, in [s-2.Mpc^2]
     Delta_B2 = simps(simps(Delta_B2_integrand, th_integ), np.log10(kp_integ))
@@ -215,17 +198,20 @@ def C_ell_kSZ(ell,late_time=late_time):
         for r in res:
             sys.stdout.write(' %.2e' %r)
         print(' ')
-        
+
+    del(Delta_B2_integrand)
+    del(I_e)
+
     return res
 
 #######################################
 ### Parallel computation of C_ells ####
 #######################################
-print('Computing for %i l on range [%i,%i] with %i threads' %(n_ells_kSZ,ell_min_kSZ,ell_max_kSZ,n_threads))
+print('\nComputing for %i l on range [%i,%i] with %i threads' %(n_ells_kSZ,ell_min_kSZ,ell_max_kSZ,n_threads))
 print("Begin kSZ calculation...")
 ells = np.linspace(ell_min_kSZ, ell_max_kSZ, n_ells_kSZ, dtype=int)
-if (debug):
-    ells = np.random.randint(ell_min_kSZ, ell_max_kSZ, n_ells_kSZ) 
+if debug:
+    ells = np.array([3000,10000],dtype=int)
 # C_ells_kSZ=np.zeros((ells.size,2))
 C_ells_kSZ = np.array(multiprocessing.Pool(n_threads).map(C_ell_kSZ, ells))
 

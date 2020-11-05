@@ -1,11 +1,14 @@
+import numpy as np
+
 #######################################
 ########### System settings ###########
 #######################################
 n_threads = 1
 folder = './'
 outroot = folder+"/kSZ_power_spectrum"  # root of all output files
-debug = False
-late_time = False
+debug = True
+late_time = True #if you want to compute the late-time component of the kSZ too
+precision = np.float32
 
 ##########################
 #### Cosmo parameters ####
@@ -36,6 +39,8 @@ T_CMB_uK=T_CMB*1e6
 s_T = 6.6524616e-29     # sigma_thomson in SI units [m^2]
 c = 299792458.          # speed of light in SI units [m.s-1]
 AU = 149597870.7       # Astronomical Unit in [km]
+Mpckm = 1e6 * AU / np.tan(1. / 3600. * np.pi / 180.)  # one Mpc in [km]
+Mpcm = Mpckm * 1e3                          # one Mpc in [m]
 
 #######################################
 ###### REIONISATION PARAMETERS ########
@@ -88,6 +93,19 @@ z_piv = 1.
 z_max = 20.
 dlogz = 0.05
 dz = 0.05
+if late_time:
+    z_integ = np.concatenate(
+        (
+            np.logspace(np.log10(z_min),np.log10(z_piv),int((np.log10(z_piv) - np.log10(z_min)) / dlogz) + 1,dtype = precision),
+            np.arange(z_piv,10.,step=dz),
+            np.arange(10,z_max+0.5,step=0.5)
+        )
+    )
+else:
+    z_integ = np.concatenate(
+        (np.arange(zend-1.,10.,step=dz),
+         np.arange(10,z_max+0.5,step=0.5))
+    )
 
 ### Setting for P(k) computation
 kmin_pk = 10**min_logkp
@@ -95,3 +113,4 @@ kmax_pk = 10**max_logkp
 nk_pk = 10001
 ### ell range for TT, EE, TE C_ells
 ell_max_CMB = 2000
+

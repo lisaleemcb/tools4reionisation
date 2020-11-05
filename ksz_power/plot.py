@@ -29,7 +29,6 @@ else:
 	PS1 = l1*(l1+1)*out[:,1]/(2*np.pi)*(T_CMB_uK**2) # 
 plt.plot(l1,PS1,color='C0',lw=1.2,ls='--',label=r'Patchy signal')
 
-
 ######## data
 plt.errorbar(3000,1.1,yerr=[[0.7],[1.0]],lw=0.,capsize=3.,elinewidth=1.2,color='k',marker='o',ms=5,alpha=.7) #reichardt+2020
 
