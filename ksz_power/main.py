@@ -8,6 +8,8 @@ from camb import model, initialpower
 import numpy as np
 import sys
 import multiprocessing
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning) 
 
 from parameters import *
 from functions import *
