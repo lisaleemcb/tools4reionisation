@@ -88,8 +88,6 @@ Pk_lin_integ = Pk_lin(kp_integ[:, None],z_integ[:, None, None]) #linear matter p
 
 if debug:
 
-    n_threads = 1
-
     import matplotlib.pyplot as plt
     import matplotlib as m
     m.rcParams.update({'font.size': 15})
@@ -184,7 +182,8 @@ def C_ell_kSZ(ell):
 print('Computing for %i l on range [%i,%i] with %i threads' %(n_ells_kSZ,ell_min_kSZ,ell_max_kSZ,n_threads))
 print("Begin kSZ calculation...")
 ells = np.linspace(ell_min_kSZ, ell_max_kSZ, n_ells_kSZ, dtype=int)
-ells = np.unique(ells.astype('int'))
+if (debug):
+    ells = np.random.randint(ell_min_kSZ, ell_max_kSZ, n_ells_kSZ) 
 C_ells_kSZ=np.zeros((ells.size,2))
 C_ells_kSZ = np.array(multiprocessing.Pool(n_threads).map(C_ell_kSZ, ells))
 

@@ -72,10 +72,9 @@ kappa = 0.10
 ### linear ell range for kSZ C_ells
 ell_min_kSZ = 1.
 ell_max_kSZ = 10000.
+n_ells_kSZ = 100
 if debug:
-	n_ells_kSZ = 2
-else: 
-	n_ells_kSZ = 100
+	n_ells_kSZ = 2	
 
 ########################################
 #### Integration/precision settings ####
