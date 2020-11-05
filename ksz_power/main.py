@@ -16,8 +16,8 @@ from functions import *
 
 if debug:
     print('\nYou are running in debugging mode')
-if ~late_time:
-    print('You are running for patchy kSZ only\n')
+if not late_time:
+    print('\nYou are running for patchy kSZ only')
 
 z3=np.linspace(0,z_max,100)         
 x3 = xe(z3,zend,zre)
@@ -28,7 +28,7 @@ print("tau = %.5f" %(tau))
 ############## CAMB ##########################
 ##############################################
 
-print("Running CAMB...")
+print("\nRunning CAMB...")
 pars = camb.CAMBparams()
 pars.set_cosmology(H0=h*100,ombh2 = obh2,omch2 = och2,TCMB=T_cmb,tau=tau)
 pars.InitPower.set_params(ns=n_s,r=0,As=A_s)
