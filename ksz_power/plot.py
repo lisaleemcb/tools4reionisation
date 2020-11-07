@@ -16,18 +16,16 @@ ax.tick_params(labelsize=14)
 
 ######## results
 
-out = np.loadtxt(outroot+'_kSZ_Cells.txt',unpack=True)
+out = np.loadtxt(outroot+'_kSZ_Cells.txt')
 l1 = out[:,0]
+PS1 = l1*(l1+1)*out[:,1]/(2*np.pi)*(T_CMB_uK**2) # 
+plt.plot(l1,PS1,color='C0',lw=1.2,ls='--',label=r'Patchy signal')
 if late_time:
-	PS1 = l1*(l1+1)*out[:,2]/(2*np.pi)*(T_CMB_uK**2) # 
-	PS2 = l1*(l1+1)*(out[:,1]-out[:,2])/(2*np.pi)*(T_CMB_uK**2)
+	PS2 = l1*(l1+1)*(out[:,2]-out[:,1])/(2*np.pi)*(T_CMB_uK**2)
 	PS = PS1 + PS2
 	plt.plot(l1,PS2,color='C0',lw=1.2,ls='-.',label=r'Homogeneous signal')
 	plt.plot(l1,PS1+PS2,color='C0',lw=1.5,label='Total signal')
 
-else:
-	PS1 = l1*(l1+1)*out[:,1]/(2*np.pi)*(T_CMB_uK**2) # 
-plt.plot(l1,PS1,color='C0',lw=1.2,ls='--',label=r'Patchy signal')
 
 ######## data
 plt.errorbar(3000,1.1,yerr=[[0.7],[1.0]],lw=0.,capsize=3.,elinewidth=1.2,color='k',marker='o',ms=5,alpha=.7) #reichardt+2020

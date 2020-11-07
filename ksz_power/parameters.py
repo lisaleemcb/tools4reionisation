@@ -8,7 +8,6 @@ folder = './'
 outroot = folder+"/kSZ_power_spectrum"  # root of all output files
 debug = True
 late_time = True #if you want to compute the late-time component of the kSZ too
-precision = np.float32
 
 ##########################
 #### Cosmo parameters ####
@@ -73,7 +72,7 @@ kappa = 0.10
 ### linear ell range for kSZ C_ells
 ell_min_kSZ = 1.
 ell_max_kSZ = 10000.
-n_ells_kSZ = 100
+n_ells_kSZ = 60
 if debug:
 	n_ells_kSZ = 2	
 
@@ -82,11 +81,18 @@ if debug:
 ########################################
 ### Settings for theta integration
 num_th = 50
+th_integ = np.linspace(0.000001,np.pi*0.999999,num_th)
+mu = np.cos(th_integ)#cos(k.k')
 ### Settings for k' (=kp) integration
 # k' array in [Mpc-1] - over which you integrate
 min_logkp = -5.
 max_logkp = 1.5
 dlogkp = 0.05
+kp_integ = np.logspace(
+    min_logkp,
+    max_logkp,
+    int((max_logkp - min_logkp) / dlogkp) + 1
+)
 ### Settings for z integration
 z_min = 0.0015
 z_piv = 1.
@@ -96,7 +102,7 @@ dz = 0.05
 if late_time:
     z_integ = np.concatenate(
         (
-            np.logspace(np.log10(z_min),np.log10(z_piv),int((np.log10(z_piv) - np.log10(z_min)) / dlogz) + 1,dtype = precision),
+            np.logspace(np.log10(z_min),np.log10(z_piv),int((np.log10(z_piv) - np.log10(z_min)) / dlogz) + 1),
             np.arange(z_piv,10.,step=dz),
             np.arange(10,z_max+0.5,step=0.5)
         )
