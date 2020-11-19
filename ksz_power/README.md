@@ -33,6 +33,6 @@ The functions.py file contains the function parameterising the reionisation hist
 The parameterisation used for P_ee(k,z) is also included in this file.
 
 
-This package requires camb (pycamb) to be installed: https://camb.info
+This package requires camb (pycamb) to be installed (https://camb.info) as well as astropy (https://www.astropy.org).
 
 Copyrights: Stephane Ilic & Adelie Gorce
