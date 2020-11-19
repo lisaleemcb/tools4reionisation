@@ -1,8 +1,9 @@
 from scipy.integrate import simps, cumtrapz, quad, trapz
 from scipy import interpolate
 import numpy as np
-
+from astropy import cosmology
 from parameters import *
+cos=cosmology.FlatLambdaCDM(H0=h*100,Tcmb0=T_cmb,Ob0=Ob_0,Om0=Om_0)
 
 ##########################################
 ######### Reionisation functions #########
@@ -39,11 +40,11 @@ def xe2tau(z,xe):
         xe : ionization rate of the Universe
         z : list in descending order (from 30 to 0 for instance)
     """
-    csurH = 0.925e28 / h  #cm
-    Hdezsurc = (Om_0*(1+z)**3.+Ol_0)**(0.5) /csurH
+    csurH = c*100/cos.H(0).si.value  #cm
+    Hdezsurc = cos.H(z).si.value/(c*100) #cm-1
 
     eta=1 #eta=1 for now
-    integ2 = (1+z)**2/Hdezsurc * xe *sigt* nh/1e6 * (1+eta*Yp/4/Xp)
+    integ2 = c * s_T * nh * xe / cos.H(z).si.value * (1+z)**2 * (1+eta*Yp/4/Xp)
     taudez2 = cumtrapz(integ2, z, initial=0)
 
     return taudez2

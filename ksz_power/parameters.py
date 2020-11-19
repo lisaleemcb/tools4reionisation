@@ -26,8 +26,12 @@ Xp       = 1-Yp
 mh       = 1.67e-24 #gr
 rhoc = 1.879e-29 *h**2 #gr cm-3
 nh = Xp*Ob_0*rhoc/mh *1e6  # m-3
-sigt     = 0.666e-24 #cm2
+s_T = 6.6524616e-29     # sigma_thomson in m^2
 xe_recomb = 1.7e-4
+
+AU = 149597870.7       # Astronomical Unit in [km]
+Mpckm = 1e6 * AU / np.tan(1. / 3600. * np.pi / 180.)  # one Mpc in [km]
+Mpcm = Mpckm * 1e3
 
 T_CMB=2.7260 #K
 T_CMB_uK=T_CMB*1e6  
