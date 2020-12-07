@@ -170,19 +170,19 @@ def C_ell_kSZ(ell,late=late_time,debug=debug):
     ### Compute Delta_B^2, in [s-2.Mpc^2]
     Delta_B2 = simps(simps(Delta_B2_integrand, th_integ), np.log10(kp_integ))
 
-    ### Compute C_kSZ(ell) integrand, in [m-3.Mpc^3]
+    ### Compute C_kSZ(ell) integrand, unit 1
     C_ell_kSZ_integrand = (
         8. * np.pi**2. / (2. * ell + 1.)**3. * (s_T / c)**2. *
         (n_H_z_integ * x_i_z_integ / (1. + z_integ))**2. *
         Delta_B2 *
-        np.exp(-2. * tau_z_integ) * eta_z_integ * detadz_z_integ
+        np.exp(-2. * tau_z_integ) * eta_z_integ * detadz_z_integ * Mpcm**3.
     )
 
     ### Compute C_kSZ(ell), no units
-    result = trapz(C_ell_kSZ_integrand * Mpcm**3.,z_integ)
+    result = trapz(C_ell_kSZ_integrand,z_integ)
     if late:
         g = z_integ >= zend 
-        result_p = trapz(C_ell_kSZ_integrand[g] * Mpcm**3.,z_integ[g])    
+        result_p = trapz(C_ell_kSZ_integrand[g],z_integ[g])    
         res = [result_p,result]
     else:
         res = [result]      
@@ -214,7 +214,7 @@ C_ells_kSZ = np.array(multiprocessing.Pool(n_threads).map(C_ell_kSZ, ells))
 ### Writing kSZ C_ells
 np.savetxt(outroot+"_kSZ_Cells.txt",
     np.c_[ells,C_ells_kSZ],
-    header="ell   kSZ tot   kSZ patchy    NB: dimensionless C_l's",delimiter=' ',fmt=['%i','%.5e','%.5e'])
+    header="ell   kSZ tot   kSZ patchy    NB: dimensionless C_l's",delimiter=' ',fmt='%.5e')
 ### Writing TT/TE/EE unlensed C_ells
 np.savetxt(outroot+"_CMB_Cells.txt",
     np.transpose([ls, unlensedCL[:,0],unlensedCL[:,1],unlensedCL[:,3]]),
