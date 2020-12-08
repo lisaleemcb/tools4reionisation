@@ -54,7 +54,7 @@ ls = np.arange(totCL.shape[0])
 ### Hubble function (=adot/a) in SI units [s-1] (CAMB gives km/s/Mpc)
 H = np.vectorize(lambda z: results.hubble_parameter(z)/Mpckm)
 ### Growth rate f
-f = np.vectorize(lambda z: data.get_redshift_evolution(0.1,z,['growth']))
+f = np.vectorize(lambda z: data.get_redshift_evolution(0.1,z,['growth']).flatten())
 ### Comoving distance / conformal time in Mpc
 D_C = np.vectorize(lambda z: results.comoving_radial_distance(z))
 ## Linear matter power spectrum P(z,k) - no hubble units, result in (Mpc)^3
