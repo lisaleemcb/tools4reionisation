@@ -11,7 +11,7 @@ cos=cosmology.FlatLambdaCDM(H0=h*100,Tcmb0=T_cmb,Ob0=Ob_0,Om0=Om_0)
 
 def xe(z,zend=zend,zre=zre,z_early=z_early,helium=HeliumI,helium2=HeliumII,xe_recomb=xe_recomb):
     """
-    Computes the redshift-asymmetric parametrization of xe(z) in Douspis+2015
+    Computes the redshift-asymmetric parameterisation of xe(z) in Douspis+2015
     Parameters:
         helium, helium2 : to include helium first and second reionisation or not
         zre : midpoint (when xe = 0.50) 
@@ -32,6 +32,31 @@ def xe(z,zend=zend,zre=zre,z_early=z_early,helium=HeliumI,helium2=HeliumII,xe_re
         tgh2 = np.tanh(xod2) # check if xod<100
         xe = (fH-xe_recomb) * ( frac + (tgh2+1.)/2. ) + xe_recomb 
     return xe
+
+
+def xe_tanh(z,ze=zre,deltaz=0.5, helium=HeliumI, helium2=HeliumII,xe_recomb=xe_recomb):
+
+     """
+     computes the redshift-symmetric parameterisation of xe(z) (tanh)
+     as function of z_reio (midpoint) and delta_z (duration)
+     """
+     deltay    = 1.5*np.sqrt(1+ze)*deltaz
+     VarMid    = (1.+ze)**1.5
+
+     xod = ((1+ze)**1.5 - (1+z)**1.5)/deltay
+     tgh = np.tanh(xod)
+
+     xe = (fH-xe_recomb)*(tgh+1.)/2.+xe_recomb
+
+     if (helium2):
+        a = 1./(z+1.)
+        deltayHe2 = 1.5*np.sqrt(1+helium_fullreion_redshift)*helium_fullreion_deltaredshift
+        VarMid2    = (1.+helium_fullreion_redshift)**1.5
+        xod2 = (VarMid2 - 1./a**1.5)/deltayHe2
+        tgh2 = np.tanh(xod2)
+        xe = xe + (fHe-xe_recomb)*(tgh2+1.)/2.
+
+     return xe
 
 def xe2tau(z,xe): 
     """
