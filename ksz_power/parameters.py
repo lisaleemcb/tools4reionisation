@@ -1,4 +1,5 @@
 import numpy as np
+from astropy import cosmology, units, constants
 
 #######################################
 ########### System settings ###########
@@ -21,17 +22,13 @@ och2 = (Om_0 - Ob_0) * h**2
 A_s = 2.139e-9
 n_s = 0.9677
 T_cmb = 2.7255
+cos=cosmology.FlatLambdaCDM(H0=h*100,Tcmb0=T_cmb,Ob0=Ob_0,Om0=Om_0)
 Yp = 0.2453
-Xp       = 1-Yp
-mh       = 1.67e-24 #gr
-rhoc = 1.879e-29 *h**2 #gr cm-3
-nh = Xp*Ob_0*rhoc/mh *1e6  # m-3
-s_T = 6.6524616e-29     # sigma_thomson in m^2
+Xp = 1-Yp
+mh = constants.m_n.value #kg
+rhoc = cos.critical_density0.si.value #kg m-3
+nh = Xp*Ob_0*rhoc/mh  # m-3
 xe_recomb = 1.7e-4
-
-AU = 149597870.7       # Astronomical Unit in [km]
-Mpckm = 1e6 * AU / np.tan(1. / 3600. * np.pi / 180.)  # one Mpc in [km]
-Mpcm = Mpckm * 1e3
 
 T_CMB=2.7260 #K
 T_CMB_uK=T_CMB*1e6  
@@ -39,17 +36,17 @@ T_CMB_uK=T_CMB*1e6
 ###################
 #### Constants ####
 ###################
-s_T = 6.6524616e-29     # sigma_thomson in SI units [m^2]
-c = 299792458.          # speed of light in SI units [m.s-1]
-AU = 149597870.7       # Astronomical Unit in [km]
-Mpckm = 1e6 * AU / np.tan(1. / 3600. * np.pi / 180.)  # one Mpc in [km]
-Mpcm = Mpckm * 1e3                          # one Mpc in [m]
+s_T = constants.sigma_T.value    # sigma_thomson in SI units [m^2]
+c = constants.c.value   # speed of light in SI units [m.s-1]
+Mpcm = (1.0 * units.Mpc).to(units.m).value  # one Mpc in [m]
+Mpckm = Mpcm / 1e3
 
 #######################################
 ###### REIONISATION PARAMETERS ########
 #######################################
 
 # parameters for reionisation history
+asym = True #asymmetric or tanh model for xe(z) 
 zend = 5.5
 zre = 7.
 z_early = 20.
@@ -103,19 +100,6 @@ z_piv = 1.
 z_max = 20.
 dlogz = 0.05
 dz = 0.05
-if late_time:
-    z_integ = np.concatenate(
-        (
-            np.logspace(np.log10(z_min),np.log10(z_piv),int((np.log10(z_piv) - np.log10(z_min)) / dlogz) + 1),
-            np.arange(z_piv,10.,step=dz),
-            np.arange(10,z_max+0.5,step=0.5)
-        )
-    )
-else:
-    z_integ = np.concatenate(
-        (np.arange(zend-1.,10.,step=dz),
-         np.arange(10,z_max+0.5,step=0.5))
-    )
 
 ### Setting for P(k) computation
 kmin_pk = 10**min_logkp

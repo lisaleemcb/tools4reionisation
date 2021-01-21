@@ -26,9 +26,13 @@ if not late_time:
 print("\nRunning CAMB...")
 
 z3=np.linspace(0,z_max,100)         
-x3 = xe(z3,zend,zre)
+x3 = xe(z3)
+if (~asym):
+    zend=z3[np.where(x3>=1.*fH)[0][-1]]
+    print('z_end = %.2f' %(zend))
 tau = xe2tau(z3,x3)[-1]
 print("tau = %.5f" %(tau))
+tauf = interpolate.interp1d(z3,xe2tau(z3,x3)) #interpolation
 
 pars = camb.CAMBparams()
 pars.set_cosmology(H0=h*100,ombh2 = obh2,omch2 = och2,TCMB=T_cmb,tau=tau)
@@ -81,6 +85,19 @@ def Pee(k,z):
     return (fH-xe(z))*W(k,xe(z)) + xe(z)*bdH(k,z)*Pk(k,z)
 
 # computations below take 6.5 secs
+if late_time:
+    z_integ = np.concatenate(
+        (
+            np.logspace(np.log10(z_min),np.log10(z_piv),int((np.log10(z_piv) - np.log10(z_min)) / dlogz) + 1),
+            np.arange(z_piv,10.,step=dz),
+            np.arange(10,z_max+0.5,step=0.5)
+        )
+    )
+else:
+    z_integ = np.concatenate(
+        (np.arange(zend-1.,10.,step=dz),
+         np.arange(10,z_max+0.5,step=0.5))
+    )
 b_del_e_integ = np.sqrt(Pee(kp_integ[:, None], z_integ[:, None, None])/Pk(kp_integ[:, None], z_integ[:, None, None])) #electrons bias
 eta_z_integ = D_C(z_integ)  # comoving distance to z in [Mpc]
 detadz_z_integ = c / H(z_integ)  # Hubble parameter in SI units [m]
@@ -88,7 +105,7 @@ f_z_integ = f(z_integ)  # growth rate, no units
 adot_z_integ = (1. / (1. + z_integ)) * H(z_integ)  # in SI units [s-1]
 n_H_z_integ = n_H(z_integ)  # number density of baryons in SI units [m-3]
 x_i_z_integ = xe(z_integ) # reionisation history
-tau_z_integ = xe2tau(z_integ,x_i_z_integ)  # thomson optical depth
+tau_z_integ = tauf(z_integ)  # thomson optical depth
 Pk_lin_integ = Pk_lin(kp_integ[:, None],z_integ[:, None, None]) #linear matter power spectrum
 
 if debug:
@@ -103,11 +120,12 @@ if debug:
 
     plt.figure(figsize=(9,8))
     plt.plot(z3,xe(z3))
+    plt.plot(z_integ,x_i_z_integ,ls='--')
     plt.xlabel(r'Redshift $z$')
     plt.ylabel(r'Ionisation level $x_e(z)$')
     plt.xlim(z_min,z_max)
     plt.tight_layout()
-    plt.savefig(folder+'/x_e_z.png')
+    # plt.savefig(folder+'/x_e_z.png')
 
     cmap = m.cm.get_cmap('coolwarm')
     norm = m.colors.LogNorm(vmin=5e-2, vmax=1)
@@ -124,7 +142,7 @@ if debug:
     c_bar=plt.colorbar(sm,fraction=0.05, norm=norm)
     c_bar.set_label(r'$x_e$')
     plt.tight_layout()
-    plt.savefig(folder+'/Pee_vs_k_kSZ.png')
+    # plt.savefig(folder+'/Pee_vs_k_kSZ.png')
 
     cmapz = m.cm.get_cmap('PuRd')
     normz = m.colors.LogNorm(vmin=np.min(k_range)/10, vmax=np.max(k_range))
@@ -142,7 +160,7 @@ if debug:
     c_bar=plt.colorbar(smz,fraction=0.05, norm=normz)
     c_bar.set_label(r'$k\, [\mathrm{Mpc}^{-1}]$')
     plt.tight_layout()
-    plt.savefig(folder+'/Pee_vs_x_kSZ.png')
+    # plt.savefig(folder+'/Pee_vs_x_kSZ.png')
 
 
 ########################
