@@ -30,7 +30,7 @@ x3 = xe(z3)
 if (~asym):
     zend=z3[np.where(x3>=1.*fH)[0][-1]]
     print('z_end = %.2f' %(zend))
-tau = xe2tau(z3,x3)[-1]
+tau = xe2tau(z3,x3)[0]
 print("tau = %.5f" %(tau))
 tauf = interpolate.interp1d(z3,xe2tau(z3,x3)) #interpolation
 

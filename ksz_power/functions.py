@@ -9,7 +9,18 @@ cos=cosmology.FlatLambdaCDM(H0=h*100,Tcmb0=T_cmb,Ob0=Ob_0,Om0=Om_0)
 ######### Reionisation functions #########
 ##########################################
 
-def xe(z,zend=zend,zre=zre,z_early=z_early,helium=HeliumI,helium2=HeliumII,xe_recomb=xe_recomb):
+def xe(z):
+    """
+    Redshift-evolution of the ionised level of the IGM. 
+    You can use a redshift-symmetric (tanh) or redshift-asymmetric (power-law) model.
+    You can also enter your own xe(z) here.
+    """
+    if asym:
+        return xe_asym(z,zend,zre)
+    else:
+        return xe_tanh(z,zre,0.5)
+
+def xe_asym(z,zend=zend,zre=zre,z_early=z_early,helium=HeliumI,helium2=HeliumII,xe_recomb=xe_recomb):
     """
     Computes the redshift-asymmetric parameterisation of xe(z) in Douspis+2015
     Parameters:
@@ -65,12 +76,14 @@ def xe2tau(z,xe):
         xe : ionization rate of the Universe
         z : list in descending order (from 30 to 0 for instance)
     """
+    z = np.sort(z)
+    xe = np.sort(xe)[::-1]
     csurH = c*100/cos.H(0).si.value  #cm
     Hdezsurc = cos.H(z).si.value/(c*100) #cm-1
 
     eta=1 #eta=1 for now
     integ2 = c * s_T * nh * xe / cos.H(z).si.value * (1+z)**2 * (1+eta*Yp/4/Xp)
-    taudez2 = cumtrapz(integ2, z, initial=0)
+    taudez2 = cumtrapz(integ2[::-1], z, initial=0)[::-1]
 
     return taudez2
 
