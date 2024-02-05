@@ -20,11 +20,11 @@ Xp = 1-Yp
 mh = constants.m_n.value #kg
 rhoc = cos.critical_density0.si.value #kg m-3
 nh = Xp*Ob_0*rhoc/mh  # m-3
-xe_recomb= 2.0943995348454196E-004 #1.0e-4
+xe_recomb= 2.0513162125824358e-4 #2.0528991071926467E-004 #1.0e-4
 
 
 
-not4                            = 3.9715 #eta
+not4 = 3.9715 #eta
 
 ###################
 #### Constants ####
@@ -84,7 +84,7 @@ def xe_tanh(z,ze=7.0,deltaz=0.5, helium1=True, helium1_redshift=7,
     """
 
     fH = 1.
-    if helium1:
+    if helium1 or helium2:
         fHe = Yp/(3.9715*(1-Yp))
         #fH+=fHe
         # print(fHe)
@@ -99,7 +99,7 @@ def xe_tanh(z,ze=7.0,deltaz=0.5, helium1=True, helium1_redshift=7,
 
     if (helium1):
         a = 1./(z+1.)
-        
+
         deltayHe1 = 1.5*np.sqrt(1+helium1_redshift)*helium1_deltaredshift
         VarMid1    = (1.+helium1_redshift)**1.5
 

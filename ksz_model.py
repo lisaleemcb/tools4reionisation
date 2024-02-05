@@ -408,6 +408,7 @@ class KSZ_power:
         pars.Reion.z_end = self.z_end
         pars.Reion.use_optical_depth = False
         pars.Reion.redshift = self.zre
+        pars.Reion.max_redshift = self.z_early
         pars.Reion.include_heliumI_fullreion = self.helium1
         pars.Reion.include_heliumII_fullreion = self.helium2
         pars.Reion.heliumI_redshift = self.heliumI_redshift
@@ -420,7 +421,7 @@ class KSZ_power:
         pars.set_dark_energy()
         data = camb.get_background(pars)
         results = camb.get_results(pars)
-        
+
         print(pars.Reion)
         if self.theta is None:
             self.theta = results.cosmomc_theta()
@@ -584,7 +585,7 @@ class KSZ_power:
             return result
 
     def run_ksz(self, ells=[3000], n_threads=1, patchy=True, Dells=False):
-
+        print('running ksz simulation...')
         ells = np.array(ells)
 
         if np.all(self.x_i_z_integ == 0.0):
